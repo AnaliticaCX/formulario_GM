@@ -5,9 +5,9 @@ import gspread
 import json
 from oauth2client.service_account import ServiceAccountCredentials
 
-st.set_page_config(
-    theme="light"
-)
+#st.set_page_config(
+#    theme="light"
+#)
 
 # Estilo CSS personalizado con fuente Roboto
 st.markdown(
