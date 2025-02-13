@@ -4,6 +4,7 @@ import random
 import gspread
 import json
 from oauth2client.service_account import ServiceAccountCredentials
+from datetime import datetime
 
 #st.set_page_config(
 #    theme="light"
@@ -121,7 +122,8 @@ def setup_google_sheets():
 
 # Guardar datos en Google Sheets
 def guardar_datos_google_sheets(sheet, chasis, opcion1, respuesta1, aleatorio2, opcion2=None, respuesta2=None, opcion3=None, respuesta3=None):
-    data = [chasis, opcion1, respuesta1, aleatorio2, opcion2 if opcion2 else "", respuesta2 if respuesta2 else "", opcion3 if opcion3 else "", respuesta3 if respuesta3 else ""]
+    fecha_hora = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    data = [chasis, opcion1, respuesta1, aleatorio2, opcion2 if opcion2 else "", respuesta2 if respuesta2 else "", opcion3 if opcion3 else "", respuesta3 if respuesta3 else "", fecha_hora]
     sheet.append_row(data)
 
 
