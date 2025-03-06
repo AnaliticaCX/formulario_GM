@@ -5,7 +5,7 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 
 #st.set_page_config(
-#    page_title="Formulario de Garantía Extendida",
+#    page_title="Formulario de Ruefa Seguro",
 #    page_icon="✅",
 #    layout="wide",
 #    initial_sidebar_state="collapsed"

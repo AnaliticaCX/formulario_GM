@@ -129,7 +129,7 @@ def guardar_datos_google_sheets(sheet, chasis, opcion1, respuesta1, aleatorio2, 
 
 # Manejo del formulario
 def manejar_formulario():
-    st.title("Formulario de Garantía Extendida")
+    st.title("Formulario de Rueda Seguro")
 
     # Estado del formulario
     if "formulario_completado" not in st.session_state:
