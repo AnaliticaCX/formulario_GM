@@ -146,7 +146,7 @@ def guardar_datos(chasis, opcion1, respuesta1, aleatorio2, opcion2=None, respues
 
 # Manejo del formulario
 def manejar_formulario():
-    st.title("Formulario de Garantía Extendida")
+    st.title("Formulario Rueda Seguro")
 
     # Estado del formulario
     if "formulario_completado" not in st.session_state:
