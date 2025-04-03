@@ -169,7 +169,7 @@ def guardar_datos_google_sheets(sheet,
 
 # Modificar el flujo del formulario
 def manejar_formulario():
-    st.title("Formulario de Rueda Seguro prueba santi")
+    st.title("Formulario de Rueda Seguro")
 
     # Estado del formulario
     if "formulario_completado" not in st.session_state:
@@ -221,7 +221,9 @@ def manejar_formulario():
             print(f"respuestas en boton si después de agregar: {st.session_state.respuestas}")
 
             # Guardar "Sí" y finalizar formulario
-            guardar_datos(
+            sheet = setup_google_sheets()
+            guardar_datos_google_sheets(
+                sheet,
                 chasis,
                 st.session_state.respuestas[0][0] if len(st.session_state.respuestas) > 0 else None,
                 st.session_state.respuestas[0][1] if len(st.session_state.respuestas) > 0 else None,
@@ -248,7 +250,9 @@ def manejar_formulario():
 
             if st.session_state.aleatorio_oportunidades == "No":
                 # Finalizar formulario si aleatorio_oportunidades es "No"
-                guardar_datos(
+                sheet = setup_google_sheets()
+                guardar_datos_google_sheets(
+                    sheet,
                     chasis,
                     st.session_state.respuestas[0][0],
                     st.session_state.respuestas[0][1],
@@ -303,7 +307,9 @@ def manejar_formulario():
             else:
                 print(f"respuestas en opciones siguientes {st.session_state.respuestas}")
                 # Finalizar formulario si no hay opciones siguientes
-                guardar_datos(
+                sheet = setup_google_sheets()
+                guardar_datos_google_sheets(
+                    sheet,
                     chasis,
                     st.session_state.respuestas[0][0] if len(st.session_state.respuestas) > 0 else None,
                     st.session_state.respuestas[0][1] if len(st.session_state.respuestas) > 0 else None,
