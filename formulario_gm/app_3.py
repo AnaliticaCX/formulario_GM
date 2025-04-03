@@ -6,8 +6,7 @@ import json
 from oauth2client.service_account import ServiceAccountCredentials
 from datetime import datetime
 
-# ofrece opciones desde la equivalente, por ejm opc1=10%, opc2=10%, opc3=3% sin marca
-# por ejm opc1=10%, opc2=5%, opc3=3% con marca
+# ofrece opciones desde la equivalente hacia abajo, por ejm opc1=10%, opc2=5%, opc3=3% ya sea con o sin marca
 
 #st.set_page_config(
 #    theme="light"
@@ -92,17 +91,14 @@ st.markdown(
 
 
 # Separar opciones "con marca" y "sin marca"
-opciones_con_marca = [
+opciones_con_marca2 = [
     "prima 3% con marca",
     "prima 5% con marca",
     "prima 10% con marca"
 ]
 
-
-opciones_sin_marca = [
-    "prima 3% sin marca",
-    "prima 5% sin marca",
-    "prima 10% sin marca"
+opciones_con_marca = [
+    "prima 10% con marca"
 ]
 
 # Reglas de opciones siguientes
@@ -130,11 +126,7 @@ equivalencias_opciones = {
 
 
 # Guardar datos en Excel
-def guardar_datos(chasis, opcion1, respuesta1, aleatorio2,
-                  opcion2=None, respuesta2=None, opcion3=None,
-                  respuesta3=None, opcion4=None, respuesta4=None,
-                  aleatorio_marcas=None
-                  ):
+def guardar_datos(chasis, opcion1, respuesta1, aleatorio2, opcion2=None, respuesta2=None, opcion3=None, respuesta3=None, aleatorio_marcas=None):
     data = {
         "Chasis": [chasis],
         "Opcion1": [opcion1],
@@ -144,9 +136,7 @@ def guardar_datos(chasis, opcion1, respuesta1, aleatorio2,
         "Opcion2": [opcion2 if opcion2 else ""],
         "Respuesta2": [respuesta2 if respuesta2 else ""],
         "Opcion3": [opcion3 if opcion3 else ""],
-        "Respuesta3": [respuesta3 if respuesta3 else ""],
-        "Opcion4": [opcion4 if opcion4 else ""],
-        "Respuesta4": [respuesta4 if respuesta4 else ""]        
+        "Respuesta3": [respuesta3 if respuesta3 else ""]
     }
     df = pd.DataFrame(data)
     try:
@@ -159,7 +149,7 @@ def guardar_datos(chasis, opcion1, respuesta1, aleatorio2,
 
 # Modificar el flujo del formulario
 def manejar_formulario():
-    st.title("Formulario de Rueda Seguro prueba santi")
+    st.title("Formulario de Rueda Seguro")
 
     # Estado del formulario
     if "formulario_completado" not in st.session_state:
@@ -190,12 +180,11 @@ def manejar_formulario():
 
     # Input de chasis
     chasis = st.text_input("🔹 Ingresa el número de chasis:", value=st.session_state.chasis)
-    print(f"chasis prueba santi {chasis}")
 
     # Validar sitiene chasis antes de continuar y asigna un valor aleatorio de opciones con marca a la opción actual
     if chasis and not st.session_state.formulario_completado:
         if st.session_state.opcion_actual is None:
-            st.session_state.opcion_actual = random.choices(opciones_con_marca, weights=[0.33, 0.33, 0.33])[0]
+            st.session_state.opcion_actual = random.choice(opciones_con_marca)
 
         # Mostrar opción actual
         st.subheader(f"Opción {len(st.session_state.respuestas) + 1}: {st.session_state.opcion_actual}")
@@ -204,25 +193,17 @@ def manejar_formulario():
         # Botones de respuesta
         col1, col2 = st.columns(2)
         if col1.button("Sí"):
-            print(f"respuestas en boton si {st.session_state.respuestas}")
-
-            # Agregar la respuesta actual a la lista de respuestas
-            st.session_state.respuestas.append((st.session_state.opcion_actual, "Sí"))
-            print(f"respuestas en boton si después de agregar: {st.session_state.respuestas}")
-
             # Guardar "Sí" y finalizar formulario
             guardar_datos(
                 chasis,
-                st.session_state.respuestas[0][0] if len(st.session_state.respuestas) > 0 else None,
-                st.session_state.respuestas[0][1] if len(st.session_state.respuestas) > 0 else None,
-                st.session_state.aleatorio_oportunidades,
+                st.session_state.opcion_actual,
+                "Sí",
+                st.session_state.aleatorio_oportunidades if st.session_state.aleatorio_oportunidades else "No",
                 st.session_state.respuestas[1][0] if len(st.session_state.respuestas) > 1 else None,
                 st.session_state.respuestas[1][1] if len(st.session_state.respuestas) > 1 else None,
                 st.session_state.respuestas[2][0] if len(st.session_state.respuestas) > 2 else None,
                 st.session_state.respuestas[2][1] if len(st.session_state.respuestas) > 2 else None,
-                st.session_state.respuestas[3][0] if len(st.session_state.respuestas) > 3 else None,
-                st.session_state.respuestas[3][1] if len(st.session_state.respuestas) > 3 else None,
-                aleatorio_marcas=st.session_state.aleatorio_marcas
+                st.session_state.aleatorio_marcas
             )
             st.session_state.formulario_completado = True
             st.rerun()
@@ -233,16 +214,14 @@ def manejar_formulario():
 
             # Determinar aleatorio_oportunidades solo si es la primera vez que se responde "No"
             if st.session_state.aleatorio_oportunidades is None:
-                st.session_state.aleatorio_oportunidades = random.choices(["Sí", "No"], weights=[0.8, 0.2])[0] #random.choice(["Sí", "No"])
+                st.session_state.aleatorio_oportunidades = random.choice(["Sí", "No"])
             print(f"oportunidades {st.session_state.aleatorio_oportunidades}")
 
             if st.session_state.aleatorio_oportunidades == "No":
                 # Finalizar formulario si aleatorio_oportunidades es "No"
                 guardar_datos(
                     chasis,
-                    st.session_state.respuestas[0][0],
-                    st.session_state.respuestas[0][1],
-                    st.session_state.aleatorio_oportunidades,
+                    st.session_state.respuestas[0][0], st.session_state.respuestas[0][1], st.session_state.aleatorio_oportunidades,
                     aleatorio_marcas=st.session_state.aleatorio_marcas
                 )
                 st.session_state.formulario_completado = True
@@ -250,7 +229,7 @@ def manejar_formulario():
 
             # Determinar aleatorio_marcas solo si no ha sido calculado antes
             if st.session_state.aleatorio_marcas is None:
-                st.session_state.aleatorio_marcas = random.choices(["con marca", "sin marca"], weights=[0.8, 0.2])[0]
+                st.session_state.aleatorio_marcas = random.choice(["con marca", "sin marca"])
             print(f"marca {st.session_state.aleatorio_marcas}")
 
             # Obtener la siguiente opción según aleatorio_marcas
@@ -272,16 +251,14 @@ def manejar_formulario():
                     opcion_sin_marca = equivalencias_opciones.get(st.session_state.opcion_actual, None)
                     print(f"sin marca (convertida) {opcion_sin_marca}")
 
-                    if opcion_sin_marca:
-                        # La primera opción en "sin marca" debe ser la equivalente exacta
-                        opciones_siguientes = [opcion_sin_marca] + reglas_siguiente_opcion_sin_marca.get(opcion_sin_marca, [])
-                        print(f"sin marca (con equivalente inicial) {opciones_siguientes}")
+                    if opcion_sin_marca and opcion_sin_marca in reglas_siguiente_opcion_sin_marca:
+                        opciones_siguientes = reglas_siguiente_opcion_sin_marca[opcion_sin_marca]
+                        print(f"sin marca {opciones_siguientes}")
                     else:
                         opciones_siguientes = []
                         print("sin marca no hay opciones siguientes")
 
             if opciones_siguientes:
-                print(f"respuestas en opciones siguientes {st.session_state.respuestas}")
                 # Filtrar opciones ya utilizadas
                 opciones_no_usadas = [opcion for opcion in opciones_siguientes if opcion not in [resp[0] for resp in st.session_state.respuestas]]
                 if opciones_no_usadas:
@@ -291,19 +268,14 @@ def manejar_formulario():
                 else:
                     print("No hay opciones no usadas disponibles")
             else:
-                print(f"respuestas en opciones siguientes {st.session_state.respuestas}")
                 # Finalizar formulario si no hay opciones siguientes
                 guardar_datos(
                     chasis,
-                    st.session_state.respuestas[0][0] if len(st.session_state.respuestas) > 0 else None,
-                    st.session_state.respuestas[0][1] if len(st.session_state.respuestas) > 0 else None,
-                    st.session_state.aleatorio_oportunidades,
+                    st.session_state.respuestas[0][0], st.session_state.respuestas[0][1], st.session_state.aleatorio_oportunidades,
                     st.session_state.respuestas[1][0] if len(st.session_state.respuestas) > 1 else None,
                     st.session_state.respuestas[1][1] if len(st.session_state.respuestas) > 1 else None,
                     st.session_state.respuestas[2][0] if len(st.session_state.respuestas) > 2 else None,
                     st.session_state.respuestas[2][1] if len(st.session_state.respuestas) > 2 else None,
-                    st.session_state.respuestas[3][0] if len(st.session_state.respuestas) > 3 else None,
-                    st.session_state.respuestas[3][1] if len(st.session_state.respuestas) > 3 else None,
                     aleatorio_marcas=st.session_state.aleatorio_marcas
                 )
                 st.session_state.formulario_completado = True
