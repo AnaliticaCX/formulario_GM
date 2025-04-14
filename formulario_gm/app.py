@@ -229,7 +229,7 @@ def manejar_formulario():
                 st.rerun()
 
             if st.session_state.aleatorio_marcas is None:
-                st.session_state.aleatorio_marcas = random.choices(["con marca", "sin marca"], weights=[0.8, 0.2])[0]
+                st.session_state.aleatorio_marcas = random.choices(["con marca", "sin marca"], weights=[0.5, 0.5])[0]
 
             siguiente_opcion = None
             if st.session_state.aleatorio_marcas == "con marca":
