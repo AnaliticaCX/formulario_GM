@@ -18,7 +18,7 @@ st.markdown(
 
         .reportview-container {
             background: #f5f5f5;
-            font-family: 'Roboto', sans-serif; /* Cambio de fuente */
+            font-family: 'Roboto', sans-serif;
         }
         .stButton>button {
             padding: 10px 22px;
@@ -30,8 +30,8 @@ st.markdown(
             transition: background-color 0.3s;
         }
         .stButton>button:hover {
-            background-color: #0056b3; /* Azul oscuro */
-            color: white; /* Cambia el color de la letra al pasar el cursor */
+            background-color: #0056b3;
+            color: white;
         }
         .stTextInput>div>div>input {
             border: 1px solid #ccc;
@@ -65,20 +65,19 @@ st.markdown(
         .stRadio button:checked {
             background-color: #007bff;
             color: white;
-            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* Agrega una sombra */
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
         }
         .pregunta {
-            font-size: 24px; /* Tamaño de letra más grande */
-            font-weight: bold; /* Negrita */
-            color: #007bff; /* Color azul */
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
             margin-bottom: 20px;
-            text-align: center; /* Centra el texto */
+            text-align: center;
         }
 
-        /* Media Query para pantallas pequeñas */
         @media (max-width: 600px) {
             .stButton>button {
-                width: 100%; /* Hace que los botones ocupen todo el ancho en pantallas pequeñas */
+                width: 100%;
                 margin: 10px 0;
             }
         }
@@ -88,90 +87,82 @@ st.markdown(
 )
 
 
-# Separar opciones "con marca" y "sin marca"
-opciones_con_marca = [
-    "prima 3% con marca",
-    "prima 5% con marca",
-    "prima 10% con marca"
-]
-
-
-opciones_sin_marca = [
-    "prima 3% sin marca",
-    "prima 5% sin marca",
-    "prima 10% sin marca"
-]
-
-# Reglas de opciones siguientes
-reglas_siguiente_opcion_con_marca = {
-    "prima 3% con marca": [],
-    "prima 5% con marca": ["prima 3% con marca"],
-    "prima 10% con marca": ["prima 5% con marca", "prima 3% con marca"]
-}
-
-reglas_siguiente_opcion_sin_marca = {
-    "prima 3% sin marca": [],
-    "prima 5% sin marca": ["prima 3% sin marca"],
-    "prima 10% sin marca": ["prima 5% sin marca", "prima 3% sin marca"]
-}
-
-# Diccionario de equivalencias entre "con marca" y "sin marca"
-equivalencias_opciones = {
-    "prima 3% con marca": "prima 3% sin marca",
-    "prima 5% con marca": "prima 5% sin marca",
-    "prima 10% con marca": "prima 10% sin marca",
-    "prima 3% sin marca": "prima 3% con marca",
-    "prima 5% sin marca": "prima 5% con marca",
-    "prima 10% sin marca": "prima 10% con marca"
-}
-
-
 # Configuración de Google Sheets
 def setup_google_sheets():
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
     creds_json = json.loads(st.secrets["GOOGLE_CREDS_JSON"])
     creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_json, scope)
-    # creds = ServiceAccountCredentials.from_json_keyfile_name("formularios-analitica-4be838661560.json", scope)
     client = gspread.authorize(creds)
-    sheet = client.open("formulario_GM_auteco").sheet1  # Cambia "Nombre de tu hoja de cálculo" por el nombre de tu hoja
+    sheet = client.open("formulario_GM_auteco").sheet1
     return sheet
 
 
-# Guardar datos en Google Sheets
-def guardar_datos_google_sheets(sheet,
-                                chasis,
-                                opcion1,
-                                respuesta1,
-                                aleatorio2,
-                                opcion2=None,
-                                respuesta2=None,
-                                opcion3=None,
-                                respuesta3=None,
-                                opcion4=None,
-                                respuesta4=None,
-                                aleatorio_marcas=None
-                                ):
+# Validar si el chasis ya fue registrado
+def chasis_ya_registrado(sheet, chasis):
+    registros = sheet.col_values(2)
+    return chasis in registros
+
+
+# Guardar los datos
+def guardar_datos(sheet, asesor, chasis, respuestas, aleatorio_oportunidades, aleatorio_marcas):
     fecha_hora = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    data = [chasis,
-            opcion1,
-            respuesta1,
-            aleatorio2, opcion2 if opcion2 else "",
-            respuesta2 if respuesta2 else "",
-            opcion3 if opcion3 else "",
-            respuesta3 if respuesta3 else "",
-            opcion4 if opcion4 else "",
-            respuesta4 if respuesta4 else "",
-            aleatorio_marcas if aleatorio_marcas else "",
-            fecha_hora
-            ]
-    sheet.append_row(data)
+    fila = [asesor, chasis]
+
+    # Opción 1
+    if len(respuestas) > 0:
+        fila.extend(respuestas[0])  # Opcion1, Respuesta1
+    else:
+        fila.extend(["", ""])
+
+    # Aleatorio2 después de respuesta1
+    fila.append(aleatorio_oportunidades if aleatorio_oportunidades else "")
+
+    # Opcion2 - Opcion4 y sus respuestas
+    for i in range(1, 4):
+        if i < len(respuestas):
+            fila.extend(respuestas[i])
+        else:
+            fila.extend(["", ""])
+
+    # Aleatorio marca y fecha
+    fila.append(aleatorio_marcas if aleatorio_marcas else "")
+    fila.append(fecha_hora)
+
+    sheet.append_row(fila)
 
 
-# Modificar el flujo del formulario
+# Opciones
+opciones_con_marca = ["prima 10% con marca", "prima 5% con marca", "prima 3% con marca"]
+opciones_sin_marca = ["prima 5% sin marca", "prima 3% sin marca"]
+
+reglas_con_marca = {
+    "prima 10% con marca": ["prima 5% con marca"],
+    "prima 5% con marca": ["prima 3% con marca"],
+    "prima 3% con marca": []
+}
+
+reglas_sin_marca = {
+    "prima 5% sin marca": ["prima 3% sin marca"],
+    "prima 3% sin marca": []
+}
+
+# Equivalencias para asegurar que sin marca baja el porcentaje
+equivalencias = {
+    "prima 10% con marca": "prima 5% sin marca",
+    "prima 5% con marca": "prima 3% sin marca"
+}
+
+
+# Manejo del formulario
 def manejar_formulario():
-    st.title("Formulario de Rueda Seguro")
+    st.title("Formulario Rueda Seguro")
 
-    # Estado del formulario
+    if "asesor" not in st.session_state or not st.session_state.asesor:
+        cedula = st.text_input("🔹 Digita tu cédula como asesor:")
+        if st.button("Continuar"):
+            st.session_state.asesor = cedula
+        return
+
     if "formulario_completado" not in st.session_state:
         st.session_state.formulario_completado = False
     if "opcion_actual" not in st.session_state:
@@ -185,143 +176,85 @@ def manejar_formulario():
     if "chasis" not in st.session_state:
         st.session_state.chasis = ""
 
-    # Si se completó el formulario
     if st.session_state.formulario_completado:
         st.success("✅ Gracias por completar el formulario.")
         if st.button("🔄 Volver al inicio"):
-            st.session_state.formulario_completado = False
-            st.session_state.opcion_actual = None
-            st.session_state.respuestas = []
-            st.session_state.aleatorio_oportunidades = None
-            st.session_state.aleatorio_marcas = None
-            st.session_state.chasis = ""
+            for key in ["formulario_completado", "opcion_actual", "respuestas", "aleatorio_oportunidades", "aleatorio_marcas", "chasis", "asesor"]:
+                if key in st.session_state:
+                    del st.session_state[key]
             st.rerun()
         return
 
-    # Input de chasis
     chasis = st.text_input("🔹 Ingresa el número de chasis:", value=st.session_state.chasis)
-    print(f"chasis prueba santi {chasis}")
+    st.session_state.chasis = chasis
 
-    # Validar sitiene chasis antes de continuar y asigna un valor aleatorio de opciones con marca a la opción actual
-    if chasis and not st.session_state.formulario_completado:
+    if chasis:
+        sheet = setup_google_sheets()
+        if chasis_ya_registrado(sheet, chasis):
+            st.error("❌ Este chasis ya ha sido registrado. No puedes continuar con el formulario.")
+            return
+
         if st.session_state.opcion_actual is None:
-            st.session_state.opcion_actual = random.choices(opciones_con_marca, weights=[0.33, 0.33, 0.33])[0]
+            st.session_state.opcion_actual = random.choice(opciones_con_marca)
 
-        # Mostrar opción actual
+        porcentaje = st.session_state.opcion_actual.split()[1]
+        tipo_marca = st.session_state.opcion_actual.split()[-2]
+
+        if tipo_marca == "con":
+            pregunta = f"¿Deseas tomar rueda seguro respaldado por Auteco por valor del {porcentaje} sobre el valor de la moto?"
+        else:
+            pregunta = f"¿Deseas tomar rueda seguro respaldado por “Moto Experience” por valor del {porcentaje} sobre el valor de la moto?"
+
         st.subheader(f"Opción {len(st.session_state.respuestas) + 1}: {st.session_state.opcion_actual}")
-        st.write("¿Vas a tomar la garantía extendida por este valor?")
+        st.write(pregunta)
 
-        # Botones de respuesta
         col1, col2 = st.columns(2)
         if col1.button("Sí"):
-            print(f"respuestas en boton si {st.session_state.respuestas}")
-
-            # Agregar la respuesta actual a la lista de respuestas
             st.session_state.respuestas.append((st.session_state.opcion_actual, "Sí"))
-            print(f"respuestas en boton si después de agregar: {st.session_state.respuestas}")
-
-            # Guardar "Sí" y finalizar formulario
-            sheet = setup_google_sheets()
-            guardar_datos_google_sheets(
-                sheet,
-                chasis,
-                st.session_state.respuestas[0][0] if len(st.session_state.respuestas) > 0 else None,
-                st.session_state.respuestas[0][1] if len(st.session_state.respuestas) > 0 else None,
-                st.session_state.aleatorio_oportunidades,
-                st.session_state.respuestas[1][0] if len(st.session_state.respuestas) > 1 else None,
-                st.session_state.respuestas[1][1] if len(st.session_state.respuestas) > 1 else None,
-                st.session_state.respuestas[2][0] if len(st.session_state.respuestas) > 2 else None,
-                st.session_state.respuestas[2][1] if len(st.session_state.respuestas) > 2 else None,
-                st.session_state.respuestas[3][0] if len(st.session_state.respuestas) > 3 else None,
-                st.session_state.respuestas[3][1] if len(st.session_state.respuestas) > 3 else None,
-                aleatorio_marcas=st.session_state.aleatorio_marcas
-            )
+            guardar_datos(sheet, st.session_state.asesor, chasis, st.session_state.respuestas,
+                          st.session_state.aleatorio_oportunidades, st.session_state.aleatorio_marcas)
             st.session_state.formulario_completado = True
             st.rerun()
 
         if col2.button("No"):
-            # Guardar "No" en respuestas
             st.session_state.respuestas.append((st.session_state.opcion_actual, "No"))
 
-            # Determinar aleatorio_oportunidades solo si es la primera vez que se responde "No"
             if st.session_state.aleatorio_oportunidades is None:
-                st.session_state.aleatorio_oportunidades = random.choices(["Sí", "No"], weights=[0.8, 0.2])[0] #random.choice(["Sí", "No"])
-            print(f"oportunidades {st.session_state.aleatorio_oportunidades}")
+                st.session_state.aleatorio_oportunidades = random.choices(["Sí", "No"], weights=[0.8, 0.2])[0]
 
             if st.session_state.aleatorio_oportunidades == "No":
-                # Finalizar formulario si aleatorio_oportunidades es "No"
-                sheet = setup_google_sheets()
-                guardar_datos_google_sheets(
-                    sheet,
-                    chasis,
-                    st.session_state.respuestas[0][0],
-                    st.session_state.respuestas[0][1],
-                    st.session_state.aleatorio_oportunidades,
-                    aleatorio_marcas=st.session_state.aleatorio_marcas
-                )
+                guardar_datos(sheet, st.session_state.asesor, chasis, st.session_state.respuestas,
+                              st.session_state.aleatorio_oportunidades, st.session_state.aleatorio_marcas)
                 st.session_state.formulario_completado = True
                 st.rerun()
 
-            # Determinar aleatorio_marcas solo si no ha sido calculado antes
             if st.session_state.aleatorio_marcas is None:
                 st.session_state.aleatorio_marcas = random.choices(["con marca", "sin marca"], weights=[0.8, 0.2])[0]
-            print(f"marca {st.session_state.aleatorio_marcas}")
 
-            # Obtener la siguiente opción según aleatorio_marcas
+            siguiente_opcion = None
             if st.session_state.aleatorio_marcas == "con marca":
-                # Verificar si la opción actual está en las reglas "con marca"
-                if st.session_state.opcion_actual in reglas_siguiente_opcion_con_marca:
-                    opciones_siguientes = reglas_siguiente_opcion_con_marca[st.session_state.opcion_actual]
-                    print(f"con marca {opciones_siguientes}")
-                else:
-                    opciones_siguientes = []
-                    print("con marca no hay opciones siguientes")
+                opciones_sig = reglas_con_marca.get(st.session_state.opcion_actual, [])
+                for o in opciones_sig:
+                    if o not in [r[0] for r in st.session_state.respuestas]:
+                        siguiente_opcion = o
+                        break
             else:
-                if st.session_state.opcion_actual in reglas_siguiente_opcion_sin_marca:
-                    # Si ya está en "sin marca", usar directamente las reglas de "sin marca"
-                    opciones_siguientes = reglas_siguiente_opcion_sin_marca[st.session_state.opcion_actual]
-                    print(f"sin marca (ya en sin marca) {opciones_siguientes}")
+                base = equivalencias.get(st.session_state.opcion_actual)
+                if base and base not in [r[0] for r in st.session_state.respuestas]:
+                    siguiente_opcion = base
                 else:
-                    # Si no está en "sin marca", convertirla usando el diccionario de equivalencias
-                    opcion_sin_marca = equivalencias_opciones.get(st.session_state.opcion_actual, None)
-                    print(f"sin marca (convertida) {opcion_sin_marca}")
+                    opciones_sig = reglas_sin_marca.get(base, []) if base else []
+                    for o in opciones_sig:
+                        if o not in [r[0] for r in st.session_state.respuestas]:
+                            siguiente_opcion = o
+                            break
 
-                    if opcion_sin_marca:
-                        # La primera opción en "sin marca" debe ser la equivalente exacta
-                        opciones_siguientes = [opcion_sin_marca] + reglas_siguiente_opcion_sin_marca.get(opcion_sin_marca, [])
-                        print(f"sin marca (con equivalente inicial) {opciones_siguientes}")
-                    else:
-                        opciones_siguientes = []
-                        print("sin marca no hay opciones siguientes")
-
-            if opciones_siguientes:
-                print(f"respuestas en opciones siguientes {st.session_state.respuestas}")
-                # Filtrar opciones ya utilizadas
-                opciones_no_usadas = [opcion for opcion in opciones_siguientes if opcion not in [resp[0] for resp in st.session_state.respuestas]]
-                if opciones_no_usadas:
-                    st.session_state.opcion_actual = opciones_no_usadas[0]
-                    print(f"nueva opcion {st.session_state.opcion_actual}")
-                    st.rerun()
-                else:
-                    print("No hay opciones no usadas disponibles")
+            if siguiente_opcion:
+                st.session_state.opcion_actual = siguiente_opcion
+                st.rerun()
             else:
-                print(f"respuestas en opciones siguientes {st.session_state.respuestas}")
-                # Finalizar formulario si no hay opciones siguientes
-                sheet = setup_google_sheets()
-                guardar_datos_google_sheets(
-                    sheet,
-                    chasis,
-                    st.session_state.respuestas[0][0] if len(st.session_state.respuestas) > 0 else None,
-                    st.session_state.respuestas[0][1] if len(st.session_state.respuestas) > 0 else None,
-                    st.session_state.aleatorio_oportunidades,
-                    st.session_state.respuestas[1][0] if len(st.session_state.respuestas) > 1 else None,
-                    st.session_state.respuestas[1][1] if len(st.session_state.respuestas) > 1 else None,
-                    st.session_state.respuestas[2][0] if len(st.session_state.respuestas) > 2 else None,
-                    st.session_state.respuestas[2][1] if len(st.session_state.respuestas) > 2 else None,
-                    st.session_state.respuestas[3][0] if len(st.session_state.respuestas) > 3 else None,
-                    st.session_state.respuestas[3][1] if len(st.session_state.respuestas) > 3 else None,
-                    aleatorio_marcas=st.session_state.aleatorio_marcas
-                )
+                guardar_datos(sheet, st.session_state.asesor, chasis, st.session_state.respuestas,
+                              st.session_state.aleatorio_oportunidades, st.session_state.aleatorio_marcas)
                 st.session_state.formulario_completado = True
                 st.rerun()
 
