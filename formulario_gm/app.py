@@ -132,24 +132,24 @@ def guardar_datos(sheet, asesor, chasis, respuestas, aleatorio_oportunidades, al
 
 
 # Opciones
-opciones_con_marca = ["prima 10% respaldo Auteco", "prima 5% respaldo Auteco", "prima 3% respaldo Auteco"]
-opciones_sin_marca = ["prima 5% respaldo Aliado", "prima 3% respaldo Aliado"]
+opciones_con_marca = ["Prima 10% respaldo Auteco", "Prima 5% respaldo Auteco", "Prima 3% respaldo Auteco"]
+opciones_sin_marca = ["Prima 5% respaldo Aliado", "Prima 3% respaldo Aliado"]
 
 reglas_con_marca = {
-    "prima 10% con marca": ["prima 5% con marca"],
-    "prima 5% con marca": ["prima 3% con marca"],
-    "prima 3% con marca": []
+    "Prima 10% con marca": ["Prima 5% con marca"],
+    "Prima 5% con marca": ["Prima 3% con marca"],
+    "Prima 3% con marca": []
 }
 
 reglas_sin_marca = {
-    "prima 5% sin marca": ["prima 3% sin marca"],
-    "prima 3% sin marca": []
+    "Prima 5% sin marca": ["Prima 3% sin marca"],
+    "Prima 3% sin marca": []
 }
 
 # Equivalencias para asegurar que sin marca baja el porcentaje
 equivalencias = {
-    "prima 10% con marca": "prima 5% sin marca",
-    "prima 5% con marca": "prima 3% sin marca"
+    "Prima 10% con marca": "Prima 5% sin marca",
+    "Prima 5% con marca": "Prima 3% sin marca"
 }
 
 
@@ -198,9 +198,9 @@ def manejar_formulario():
             st.session_state.opcion_actual = random.choice(opciones_con_marca)
 
         porcentaje = st.session_state.opcion_actual.split()[1]
-        tipo_marca = st.session_state.opcion_actual.split()[-2]
+        tipo_marca = st.session_state.opcion_actual.split()[-1]
 
-        if tipo_marca == "con":
+        if tipo_marca == "Auteco":
             pregunta = f"¿Deseas tomar rueda seguro respaldado por Auteco por valor del {porcentaje} sobre el valor de la moto?"
         else:
             pregunta = f"¿Deseas tomar rueda seguro respaldado por “Moto Experience” por valor del {porcentaje} sobre el valor de la moto?"
