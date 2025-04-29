@@ -136,20 +136,20 @@ opciones_con_marca = ["prima 10% respaldo Auteco", "prima 5% respaldo Auteco", "
 opciones_sin_marca = ["prima 5% respaldo Aliado", "prima 3% respaldo Aliado"]
 
 reglas_con_marca = {
-    "prima 10% respaldo Auteco": ["prima 5% respaldo Auteco"],
-    "prima 5% respaldo Auteco": ["prima 3% respaldo Auteco"],
-    "prima 3% respaldo Auteco": []
+    "prima 10% con marca": ["prima 5% con marca"],
+    "prima 5% con marca": ["prima 3% con marca"],
+    "prima 3% con marca": []
 }
 
 reglas_sin_marca = {
-    "prima 5% respaldo Aliado": ["prima 3% respaldo Aliado"],
-    "prima 3% respaldo Aliado": []
+    "prima 5% sin marca": ["prima 3% sin marca"],
+    "prima 3% sin marca": []
 }
 
 # Equivalencias para asegurar que sin marca baja el porcentaje
 equivalencias = {
-    "prima 10% respaldo Auteco": "prima 5% respaldo Aliado",
-    "prima 5% respaldo Auteco": "prima 3% respaldo Aliado"
+    "prima 10% con marca": "prima 5% sin marca",
+    "prima 5% con marca": "prima 3% sin marca"
 }
 
 
