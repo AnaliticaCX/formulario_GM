@@ -6,6 +6,10 @@ import json
 from oauth2client.service_account import ServiceAccountCredentials
 from datetime import datetime
 
+#st.set_page_config(
+#    theme="light"
+#)
+
 # Estilo CSS personalizado con fuente Roboto
 st.markdown(
     """
@@ -104,19 +108,23 @@ def guardar_datos(sheet, asesor, chasis, respuestas, aleatorio_oportunidades, al
     fecha_hora = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     fila = [asesor, chasis]
 
+    # Opción 1
     if len(respuestas) > 0:
-        fila.extend(respuestas[0])
+        fila.extend(respuestas[0])  # Opcion1, Respuesta1
     else:
         fila.extend(["", ""])
 
+    # Aleatorio2 después de respuesta1
     fila.append(aleatorio_oportunidades if aleatorio_oportunidades else "")
 
+    # Opcion2 - Opcion4 y sus respuestas
     for i in range(1, 4):
         if i < len(respuestas):
             fila.extend(respuestas[i])
         else:
             fila.extend(["", ""])
 
+    # Aleatorio marca y fecha
     fila.append(aleatorio_marcas if aleatorio_marcas else "")
     fila.append(fecha_hora)
 
@@ -138,6 +146,7 @@ reglas_sin_marca = {
     "Prima 3% respaldo Aliado": []
 }
 
+# Equivalencias para asegurar que sin marca baja el porcentaje
 equivalencias = {
     "Prima 10% respaldo Auteco": "Prima 5% respaldo Aliado",
     "Prima 5% respaldo Auteco": "Prima 3% respaldo Aliado"
@@ -149,15 +158,9 @@ def manejar_formulario():
     st.title("Formulario Rueda Seguro")
 
     if "asesor" not in st.session_state or not st.session_state.asesor:
-        if "cedula_temp" not in st.session_state:
-            st.session_state.cedula_temp = ""
-
-        st.session_state.cedula_temp = st.text_input("🔹 Digita tu cédula como asesor:", value=st.session_state.cedula_temp)
-
+        cedula = st.text_input("🔹 Digita tu cédula como asesor:")
         if st.button("Continuar"):
-            if st.session_state.cedula_temp.strip() != "":
-                st.session_state.asesor = st.session_state.cedula_temp.strip()
-                st.experimental_rerun()
+            st.session_state.asesor = cedula
         return
 
     if "formulario_completado" not in st.session_state:
@@ -176,7 +179,7 @@ def manejar_formulario():
     if st.session_state.formulario_completado:
         st.success("✅ Gracias por completar el formulario.")
         if st.button("🔄 Volver al inicio"):
-            for key in ["formulario_completado", "opcion_actual", "respuestas", "aleatorio_oportunidades", "aleatorio_marcas", "chasis", "asesor", "cedula_temp"]:
+            for key in ["formulario_completado", "opcion_actual", "respuestas", "aleatorio_oportunidades", "aleatorio_marcas", "chasis", "asesor"]:
                 if key in st.session_state:
                     del st.session_state[key]
             st.rerun()
