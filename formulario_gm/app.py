@@ -5,6 +5,7 @@ import gspread
 import json
 from oauth2client.service_account import ServiceAccountCredentials
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 # Estilo CSS personalizado con fuente Roboto
 st.markdown(
@@ -101,7 +102,7 @@ def chasis_ya_registrado(sheet, chasis):
 
 # Guardar los datos
 def guardar_datos(sheet, asesor, chasis, respuestas, aleatorio_oportunidades, aleatorio_marcas):
-    fecha_hora = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    fecha_hora = datetime.now(ZoneInfo("America/Bogota")).strftime("%Y-%m-%d %H:%M:%S")
     fila = [asesor, chasis]
 
     if len(respuestas) > 0:
@@ -151,15 +152,25 @@ def manejar_formulario():
     if "asesor" not in st.session_state:
         st.session_state.asesor = ""
 
+
+
+    if "formulario_completado" not in st.session_state:
+        st.session_state.formulario_completado = False
+
+    if st.session_state.formulario_completado:
+        st.success("✅ Gracias por completar el formulario.")
+        if st.button("🔄 Volver al inicio"):
+            for key in ["formulario_completado", "opcion_actual", "respuestas", "aleatorio_oportunidades", "aleatorio_marcas", "chasis", "asesor", "cedula_temp"]:
+                if key in st.session_state:
+                    del st.session_state[key]
+            st.rerun()
+        return
+
     st.text_input("🔹 Digita tu cédula como asesor:", key="asesor")
 
     if not st.session_state.asesor.strip():
         st.warning("Por favor, ingresa tu cédula para continuar.")
         return
-
-
-    if "formulario_completado" not in st.session_state:
-        st.session_state.formulario_completado = False
     if "opcion_actual" not in st.session_state:
         st.session_state.opcion_actual = None
     if "respuestas" not in st.session_state:
